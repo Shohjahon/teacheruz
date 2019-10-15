@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <beans:bean id="passwordEncoder"
+          class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+    <http pattern="/resources/**" security="none"/>
+
+    <http>
+        <intercept-url pattern="/mydashboard/**" access="hasAuthority('ADMIN')"/>
+        <intercept-url pattern="/courses/**" access="hasAnyAuthority('ADMIN','Student')"/>
+        <intercept-url pattern="/about_us/**" access="hasAuthority('ADMIN')"/>
+        <intercept-url pattern="/courses/{id}/course" access="hasAuthority('ADMIN')"/>
+        <intercept-url pattern="/manage_groups/**" access="hasAuthority('ADMIN')"/>
+        <intercept-url pattern="/manage_subjects/**" access="hasAuthority('ADMIN')"/>
+        <intercept-url pattern="/**" access="permitAll"/>
+        <form-login login-page="/login" />
+        <access-denied-handler error-page="/access-denied"/>
+        <csrf disabled="true"/>
+    </http>
+
+
+    <authentication-manager>
+        <authentication-provider>
+            <password-encoder ref="passwordEncoder"/>
+            <jdbc-user-service data-source-ref="dataSource"
+                               users-by-username-query="SELECT email, password_hash, is_active FROM user WHERE email = ?"
+                               authorities-by-username-query="SELECT email, role FROM user WHERE email = ?"
+            />
+        </authentication-provider>
+    </authentication-manager>
+
+</beans:beans>
